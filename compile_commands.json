@@ -1,0 +1,19 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-ffreestanding",
+      "-fno-builtin",
+      "-fno-stack-protector",
+      "-m32",
+      "-Isrc",
+      "-c",
+      "-o",
+      "obj/kernel/syscall/syscall.o",
+      "src/kernel/syscall/syscall.c"
+    ],
+    "directory": "/home/user/Projects/QUOS",
+    "file": "/home/user/Projects/QUOS/src/kernel/syscall/syscall.c",
+    "output": "/home/user/Projects/QUOS/obj/kernel/syscall/syscall.o"
+  }
+]
