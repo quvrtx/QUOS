@@ -2,8 +2,26 @@ ENTRY(_start)
 
 SECTIONS {
     . = 1M;
-    .text : { *(.text) }
-    .data : { *(.data) }
-    .bss  : { *(.bss)  }
-    /DISCARD/ : { *(.eh_frame) }
+
+    .multiboot : {
+        *(.multiboot)
+    }
+
+    .text : {
+        *(.text)
+    }
+
+    .data : {
+        *(.data)
+    }
+
+    .bss : {
+        *(.bss)
+        *(COMMON)
+    }
+
+    /DISCARD/ : {
+        *(.eh_frame)
+        *(.comment)
+    }
 }

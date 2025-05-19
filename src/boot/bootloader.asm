@@ -2,24 +2,43 @@
 
 section .multiboot
 align 4
-    multiboot_header:
-        dd 0x1BADB002             ; Magic
-        dd 0x00000003             ; Flags
-        dd -(0x1BADB002 + 0x03)   ; Checksum
+    dd 0x1BADB002
+    dd 0x00000003
+    dd -(0x1BADB002 + 0x03)
 
 section .text
 global _start
 
 extern kernel_main
 extern gdt_descriptor
-extern int80_handler
+extern setup_idt
+extern setup_pic
 
 _start:
     cli
+
     lgdt [gdt_descriptor]
-    lidt [int80_handler]
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
+    jmp 0x08:.protected_mode
+
+.protected_mode:
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+
     mov esp, stack_top
+
+    call setup_idt
+    call setup_pic
+    sti
+
     call kernel_main
+
     cli
     hlt
 

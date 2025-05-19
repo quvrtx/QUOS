@@ -1,6 +1,6 @@
 #include <kernel/syscall/syscall.h>
 
-void handle_syscalls(void) {
+void syscall_handler_c(void) {
     unsigned int index;
 
     asm volatile (

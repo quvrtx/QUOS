@@ -1,5 +1,4 @@
 #include <kernel/mm/buddy.h>
-#include <lib/stdint.h>
 
 static size_t align_up(size_t size){
     if (size == 0) return 0;
@@ -13,15 +12,16 @@ static size_t align_up(size_t size){
     return aligned_size;
 }
 
-static free_block* get_buddy(free_block* block, int order){
-    return (free_block*)((uintptr_t)block ^ (1 << order));
+static free_block* get_buddy(BuddyAlloc* alloc, free_block* block, int order) {
+    uintptr_t buddy_addr = (uintptr_t)block - (uintptr_t)alloc->heap_start;
+    buddy_addr ^= (1 << order);
+    return (free_block*)(buddy_addr + (uintptr_t)alloc->heap_start);
 }
-
 static int split(BuddyAlloc* alloc, int order){
     if (!alloc->free_list[order].next) return 1;
 
     free_block* block1 = alloc->free_list[order].next;
-    free_block* block2 = get_buddy(block1, order-1);
+    free_block* block2 = get_buddy(alloc, block1, order-1);
 
     block1->next = block2;
     block2->next = alloc->free_list[order-1].next;
@@ -95,12 +95,12 @@ void free_buddy(BuddyAlloc *alloc, void *ptr){
 
     size_t order = block->header.order;
     
-    if (!alloc || !block->header.used || !ptr) return;
+    if (!alloc || block->header.used || !ptr) return;
 
     block->header.used = 1;
 
     while (order < MAX_ORDER){
-        free_block* block2 = get_buddy(block, order);
+        free_block* block2 = get_buddy(alloc, block, order);
 
         int can_merge = 1;
 
