@@ -1,7 +1,7 @@
 #ifndef PORT_IO_H
 #define PORT_IO_H
 
-#include <stdint.h>
+#include <lib/stdint.h>
 
 uint8_t inb(uint16_t port);
 uint16_t inw(uint16_t port);

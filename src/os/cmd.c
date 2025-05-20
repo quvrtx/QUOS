@@ -1,12 +1,6 @@
-//#include <lib/string.h>
+#include <lib/string.h>
 #include <lib/stddef.h>
 #include <os/sh.h>
-
-extern void* memcpy(void* dest, const void* src, size_t n);
-extern void* memset(void* s, int c, size_t n);
-extern size_t strlen(const char* s);
-extern int strcmp(const char* s1, const char* s2);
-extern char* strcpy(char* dest, const char* src);
 
 void execute(char input[512]){
     char cmd[128];
