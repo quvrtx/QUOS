@@ -1,5 +1,5 @@
-#include <kernel/drivers/io_port.h>
-#include <kernel/global.h>
+#include <drivers/io_port.h>
+#include <global.h>
 
 volatile uint32_t timer_ticks = 0;
 

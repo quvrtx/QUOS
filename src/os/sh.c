@@ -1,6 +1,6 @@
 #include <os/sh.h>
 
-#include <kernel/drivers/io_port.h>
+#include <drivers/io_port.h>
 
 typedef volatile char vchar;
 

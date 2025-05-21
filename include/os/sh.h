@@ -6,6 +6,6 @@ extern void vga_clear();
 extern void vga_puts(const char* str);
 extern void vga_delc();
 extern void vga_putc(char c);
-void vga_scroll(int lines);
+extern void vga_scroll(int lines);
 
 #endif //SH_H

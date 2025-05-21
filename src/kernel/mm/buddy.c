@@ -1,4 +1,4 @@
-#include <kernel/mm/buddy.h>
+#include <mm/buddy.h>
 
 static size_t align_up(size_t size){
     if (size == 0) return 0;

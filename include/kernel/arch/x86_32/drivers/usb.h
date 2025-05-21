@@ -2,7 +2,7 @@
 #define USB_H
 
 #include <lib/stdint.h>
-#include <kernel/drivers/pci.h>
+#include <drivers/pci.h>
 
 typedef struct {
     uint32_t vendor_device;

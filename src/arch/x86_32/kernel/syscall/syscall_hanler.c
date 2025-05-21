@@ -1,4 +1,4 @@
-#include <kernel/syscall/syscall.h>
+#include <syscall/syscall.h>
 
 void syscall_handler_c(void) {
     unsigned int index;

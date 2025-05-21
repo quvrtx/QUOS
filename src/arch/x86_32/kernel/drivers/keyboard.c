@@ -1,4 +1,4 @@
-#include <kernel/drivers/io_port.h>
+#include <drivers/io_port.h>
 #include <os/sh.h>
 #include <os/cmd.h>
 

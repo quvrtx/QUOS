@@ -1,4 +1,4 @@
-#include <kernel/drivers/usb.h>
+#include <drivers/usb.h>
 
 USB_DEVICE find_usb(void) {
     USB_DEVICE device = {0};

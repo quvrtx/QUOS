@@ -1,5 +1,5 @@
 #include <os/sh.h>
-#include <kernel/drivers/io_port.h>
+#include <drivers/io_port.h>
 
 void kernel(void){
     vga_clear();

@@ -1,79 +1,54 @@
-# ===== Конфигурация =====
-ARCH ?= x86_64  # По умолчанию x86_64, можно переопределить: make ARCH=riscv
+ARCH ?= x86_32
 
-# ===== Инструменты =====
-# Для x86
-ifeq ($(ARCH),x86_32)
-    ASM = nasm
-    CC = clang
-    LD = ld
-    ASM_FLAGS = -f elf32
-    CC_FLAGS = -ffreestanding -nostdlib -nostartfiles -nodefaultlibs \
-               -fno-builtin -fno-stack-protector -m32 -Isrc -nostdinc
-    LD_FLAGS = -m elf_i386 -nostdlib -T linker_x86.ld
-else ifeq ($(ARCH),x86_64)
-    ASM = nasm
-    CC = clang
-    LD = ld
-    ASM_FLAGS = -f elf64
-    CC_FLAGS = -ffreestanding -nostdlib -nostartfiles -nodefaultlibs \
-               -fno-builtin -fno-stack-protector -m64 -Isrc -nostdinc
-    LD_FLAGS = -m elf_x86_64 -nostdlib -T linker_x86.ld
-# Для RISC-V
-else ifeq ($(ARCH),riscv)
-    ASM = riscv64-unknown-elf-as
-    CC = riscv64-unknown-elf-gcc
-    LD = riscv64-unknown-elf-ld
-    ASM_FLAGS = -march=rv64imac -mabi=lp64
-    CC_FLAGS = -ffreestanding -nostdlib -nostartfiles -nodefaultlibs \
-               -fno-builtin -march=rv64imac -mabi=lp64 -Isrc -nostdinc
-    LD_FLAGS = -nostdlib -T linker_riscv.ld
-else
-    $(error Unknown ARCH: $(ARCH). Supported: x86_32, x86_64, riscv)
-endif
+CC = clang
+AS = nasm
+LD = ld
+OBJCOPY = objcopy
+MKDIR = mkdir -p
+RM = rm -f
 
-# ===== Пути и файлы =====
-SRC_DIRS := $(shell find src -type d)
-ASM_SOURCES := $(shell find src -name '*.asm')
-C_SOURCES := $(shell find src -name '*.c')
+SRC_DIR = src
+INCLUDE_DIR = include
+OBJ_DIR = obj
+BIN_DIR = bin
 
-OBJ_DIR = obj/$(ARCH)
-ASM_OBJECTS := $(ASM_SOURCES:src/%.asm=$(OBJ_DIR)/%.o)
-C_OBJECTS := $(C_SOURCES:src/%.c=$(OBJ_DIR)/%.o)
-OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
+ASFLAGS = -f elf32
+CC_FLAGS = -target i386-pc-none-elf -m32 -ffreestanding -nostdlib \
+           -fno-builtin -fno-stack-protector -fno-pic \
+           -I$(INCLUDE_DIR)/kernel/arch/$(ARCH) -I$(INCLUDE_DIR) -I$(INCLUDE_DIR)/kernel \
+           -nostdinc -DARCH_$(ARCH)
+LD_FLAGS = -m elf_i386 -nostdlib -T linker.ld --oformat=elf32-i386
 
-KERNEL = kernel-$(ARCH).bin
+ASM_SOURCES := $(shell find $(SRC_DIR) -name '*.asm')
+C_SOURCES := $(shell find $(SRC_DIR) -name '*.c')
+OBJECTS := $(patsubst $(SRC_DIR)/%.asm,$(OBJ_DIR)/%.o,$(ASM_SOURCES)) \
+           $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_SOURCES))
+DIRS := $(sort $(dir $(OBJECTS)))
 
-OBJ_SUBDIRS := $(patsubst src%,$(OBJ_DIR)%,$(SRC_DIRS))
+all: $(BIN_DIR)/kernel-$(ARCH).bin
 
-# ===== Цели =====
-all: $(KERNEL)
+$(BIN_DIR)/kernel-$(ARCH).bin: $(BIN_DIR)/kernel-$(ARCH).elf
+	$(OBJCOPY) -O binary $< $@
 
-$(KERNEL): $(OBJECTS) | $(OBJ_SUBDIRS)
+$(BIN_DIR)/kernel-$(ARCH).elf: $(OBJECTS) | $(BIN_DIR)
 	$(LD) $(LD_FLAGS) -o $@ $(OBJECTS)
 
-$(OBJ_DIR)/%.o: src/%.asm | $(OBJ_SUBDIRS)
-	$(ASM) $(ASM_FLAGS) $< -o $@
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.asm | $(DIRS)
+	@$(MKDIR) $(@D)
+	$(AS) $(ASFLAGS) $< -o $@
 
-$(OBJ_DIR)/%.o: src/%.c | $(OBJ_SUBDIRS)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(DIRS)
+	@$(MKDIR) $(@D)
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
-$(OBJ_SUBDIRS):
-	mkdir -p $@
+$(DIRS) $(BIN_DIR):
+	@$(MKDIR) $@
 
+# ===== Очистка =====
 clean:
-	rm -rf $(OBJ_DIR)
-	rm -f $(KERNEL)
+	@$(RM) -r $(OBJ_DIR) $(BIN_DIR)
 
-run:
-ifeq ($(ARCH),x86_32)
-	qemu-system-i386 -kernel $(KERNEL)
-else ifeq ($(ARCH),x86_64)
-	qemu-system-x86_64 -kernel $(KERNEL)
-else ifeq ($(ARCH),riscv)
-	qemu-system-riscv64 -machine virt -kernel $(KERNEL) -nographic
-else
-	$(error Unknown ARCH: $(ARCH))
-endif
+run: $(BIN_DIR)/kernel-$(ARCH).elf
+	qemu-system-i386 -kernel $<
 
 .PHONY: all clean run

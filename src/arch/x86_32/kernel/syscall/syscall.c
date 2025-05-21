@@ -1,5 +1,4 @@
-#include <kernel/syscall/syscall.h>
-#include <kernel/fs/fs.h>
+#include <syscall/syscall.h>
 
 int write(int fd, void* buf, uint32_t count){
     return 0;

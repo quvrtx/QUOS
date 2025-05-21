@@ -1,19 +1,68 @@
 [
   {
     "arguments": [
-      "/usr/bin/gcc",
+      "/usr/bin/clang",
+      "-target",
+      "i386-pc-none-elf",
+      "-m32",
       "-ffreestanding",
       "-fno-builtin",
       "-fno-stack-protector",
-      "-m32",
-      "-Isrc",
+      "-Iinclude/kernel/x86_32",
+      "-Iinclude",
+      "-Iinclude/kernel",
+      "-nostdinc",
       "-c",
       "-o",
-      "obj/kernel/syscall/syscall.o",
-      "src/kernel/syscall/syscall.c"
+      "obj/arch/x86_32/kernel/drivers/usb.o",
+      "src/arch/x86_32/kernel/drivers/usb.c"
     ],
     "directory": "/home/user/Projects/QUOS",
-    "file": "/home/user/Projects/QUOS/src/kernel/syscall/syscall.c",
-    "output": "/home/user/Projects/QUOS/obj/kernel/syscall/syscall.o"
+    "file": "/home/user/Projects/QUOS/src/arch/x86_32/kernel/drivers/usb.c",
+    "output": "/home/user/Projects/QUOS/obj/arch/x86_32/kernel/drivers/usb.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-target",
+      "i386-pc-none-elf",
+      "-m32",
+      "-ffreestanding",
+      "-fno-builtin",
+      "-fno-stack-protector",
+      "-Iinclude/kernel/x86_32",
+      "-Iinclude",
+      "-Iinclude/kernel",
+      "-nostdinc",
+      "-c",
+      "-o",
+      "obj/arch/x86_32/kernel/drivers/io_port.o",
+      "src/arch/x86_32/kernel/drivers/io_port.c"
+    ],
+    "directory": "/home/user/Projects/QUOS",
+    "file": "/home/user/Projects/QUOS/src/arch/x86_32/kernel/drivers/io_port.c",
+    "output": "/home/user/Projects/QUOS/obj/arch/x86_32/kernel/drivers/io_port.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-target",
+      "i386-pc-none-elf",
+      "-m32",
+      "-ffreestanding",
+      "-fno-builtin",
+      "-fno-stack-protector",
+      "-Iinclude/kernel/x86_32",
+      "-Iinclude",
+      "-Iinclude/kernel",
+      "-nostdinc",
+      "-c",
+      "-o",
+      "obj/arch/x86_32/kernel/drivers/pci.o",
+      "src/arch/x86_32/kernel/drivers/pci.c"
+    ],
+    "directory": "/home/user/Projects/QUOS",
+    "file": "/home/user/Projects/QUOS/src/arch/x86_32/kernel/drivers/pci.c",
+    "output": "/home/user/Projects/QUOS/obj/arch/x86_32/kernel/drivers/pci.o"
   }
 ]
