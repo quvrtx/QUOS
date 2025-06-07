@@ -1,120 +1,182 @@
 #include <mm/buddy.h>
+#include <lib/stdint.h>
 
-static size_t align_up(size_t size){
-    if (size == 0) return 0;
-    size_t aligned_size = 1;
 
-    while (aligned_size < size){
-        aligned_size <<= 1;
+/* align to order of 2 */
+static size_t align(size_t size){
+    if (!size) return 0;
+    int i = 0;
+    for (i = 0; (1 << i) < size; i++){}
+    return (1 << i);
+}
 
-        if (aligned_size == 0) return 0;
+/* XOR finding buddy */
+static free_block_t* get_buddy(buddy_alloc_t* alloc, free_block_t* block1, int order){
+    free_block_t* block2 = (free_block_t*)(((uintptr_t)block1 - (uintptr_t)alloc->start) ^ (1 << order));
+    block2 = (free_block_t*)((uintptr_t)block2 + (uintptr_t)alloc->start);
+    return block2;
+}
+
+/* remove block from free list */
+static void remove_block_from_free_list(buddy_alloc_t* alloc, free_block_t* block){
+    for (int i = 0; i <= MAX_ORDER; i++){
+        free_block_t* current_block = alloc->free[i].next;
+
+        if (current_block == block){
+            alloc->free[i].next = current_block->next;
+            return;
+        }
+
+        while (current_block != NULL){
+            if (current_block->next == block){
+                current_block->next = current_block->next->next;
+                return;
+            }
+
+            current_block = current_block->next;
+        }
     }
-    return aligned_size;
 }
 
-static free_block* get_buddy(BuddyAlloc* alloc, free_block* block, int order) {
-    uintptr_t buddy_addr = (uintptr_t)block - (uintptr_t)alloc->heap_start;
-    buddy_addr ^= (1 << order);
-    return (free_block*)(buddy_addr + (uintptr_t)alloc->heap_start);
+/* remove block from free list by order */
+static void remove_block_from_free_list_by_order(buddy_alloc_t* alloc, free_block_t* block, int order){
+    free_block_t* current_block = alloc->free[order].next;
+
+    if (current_block == block){
+            alloc->free[order].next = current_block->next;
+            return;
+        }
+
+    while (current_block != NULL){
+        if (current_block->next == block){
+            current_block->next = current_block->next->next;
+            return;
+        }
+
+        current_block = current_block->next;
+    }
 }
-static int split(BuddyAlloc* alloc, int order){
-    if (!alloc->free_list[order].next) return 1;
 
-    free_block* block1 = alloc->free_list[order].next;
-    free_block* block2 = get_buddy(alloc, block1, order-1);
+/* split block to 2 blocks */
+static int split(buddy_alloc_t* alloc, free_block_t* block1){
+    // Errors 
+    if (!alloc || !block1 || !(
+        (uintptr_t)alloc->start < (uintptr_t)block1 &&
+        (uintptr_t)alloc->start + (uintptr_t)alloc->size > (uintptr_t)block1 + (uintptr_t)sizeof(free_block_t)
+    )) return -1;
 
+    int order = block1->order - 1;
+
+    free_block_t* block2 = get_buddy(alloc, block1, order);
+
+    // Filling block1
     block1->next = block2;
-    block2->next = alloc->free_list[order-1].next;
+    block1->used = 0;
 
-    block1->header.used = 0;
-    block1->header.order = order-1;
-    block2->header.used = 0;
-    block2->header.order = order-1;
+    // Filling block2
+    block2->order = order;
+    block2->used = 0;
+    block2->next = alloc->free[order+1].next;
 
-    alloc->free_list[order].next = alloc->free_list[order].next->next;
-    alloc->free_list[order-1].next = block1;
+    // Update free list
+    alloc->free[order].next = block1;
+    alloc->free[order+1].next = alloc->free[order+1].next->next;
 
     return 0;
 }
 
-static int merge(BuddyAlloc* alloc, int order){
-    
+/* merge block1 and block2 (founded by get_buddy func) to 1 block */
+static int merge(buddy_alloc_t* alloc, free_block_t* block1){
+    // Errors
+    if (!alloc || !block1 || !(
+        (uintptr_t)alloc->start < (uintptr_t)block1 &&
+        (uintptr_t)alloc->start + (uintptr_t)alloc->size > (uintptr_t)block1 + (uintptr_t)sizeof(free_block_t)
+    )) return -1;
+
+    int order = block1->order + 1;
+
+    free_block_t* block2 = get_buddy(alloc, block1, order - 1);
+
+    remove_block_from_free_list_by_order(alloc, block1, order-1);
+    remove_block_from_free_list_by_order(alloc, block2, order-1);
+
+    block1->order = order;
+    block1->next = alloc->free[order].next;
+
+    alloc->free[order].next = block1;
+
+    return 0;
 }
 
-void init_buddy(BuddyAlloc *alloc, void *heap_start, size_t heap_size){
-    int total_size = sizeof(header_block) + heap_size;
+int init_buddy_alloc(buddy_alloc_t *alloc, void *start, size_t size){
+    if (!alloc || !start || !size){
+        return -1;
+    }
 
-    alloc->heap_start = heap_start;
-    alloc->heap_size = heap_size;
-
+    alloc->start = start;
+    alloc->size = size;
+    
     for (int i = 0; i <= MAX_ORDER; i++){
-        alloc->free_list[i].next = NULL;
+        alloc->free[i].next = NULL;
     }
 
-    int order = 0;
-    while ((1 << order) < heap_size && order <= MAX_ORDER) order++;
-
-    free_block* init_block = (free_block*)heap_start;
-    init_block->next = NULL;
-    init_block->header.order = order;
-    init_block->header.used = 0;
-
-    alloc->free_list[order].next = init_block;
-}
-
-void* alloc_buddy(BuddyAlloc* alloc, size_t size){
-    if (!alloc || !size || alloc->heap_size < align_up(size)) return NULL;
-
-    size_t total_size = sizeof(header_block) + size;
-    total_size = align_up(total_size);
-
-    size_t order = 0;
-    while ((1 << order) < total_size && order <= MAX_ORDER) order++;
-
-    if (order >= MAX_ORDER) return NULL;
-
-    int higher_order = order;
-    while ((1 << higher_order) < total_size && order <= MAX_ORDER) higher_order++;
-
-    while (higher_order > order){
-        if (split(alloc, higher_order)) return NULL;
-        higher_order--;
-    }
-
-    alloc->free_list[order].next->header.used = 1;
-    alloc->free_list[order].next->header.order = order;
-
-    free_block* res = alloc->free_list[order].next;
-    alloc->free_list[order].next = res->next;
-
-    return (void*)((uintptr_t)res + sizeof(header_block));
-}
-
-void free_buddy(BuddyAlloc *alloc, void *ptr){
-    free_block* block = (free_block*)((uintptr_t)ptr - sizeof(header_block));
-
-    size_t order = block->header.order;
-    
-    if (!alloc || block->header.used || !ptr) return;
-
-    block->header.used = 1;
-
-    while (order < MAX_ORDER){
-        free_block* block2 = get_buddy(alloc, block, order);
-
-        int can_merge = 1;
-
-        if ((uintptr_t)block2+(1 << order) < ((uintptr_t)alloc->heap_start + (uintptr_t)alloc->heap_size) || 
-            (uintptr_t)block2 > (uintptr_t)alloc->heap_start) can_merge = 0;
-
-        if (can_merge){
-            free_block* current = alloc->free_list[order].next;
-            while (current){
-                if (current == block2 && current->header.used == 0 && current->header.order == order) break;
-            }
-            if (!current) can_merge = 0;
+    int init_order = 0;
+    while (init_order < MAX_ORDER){
+        if (!((1 << init_order) < size)){
+            init_order--;
+            break;
         }
-
-        if (!can_merge) break;
     }
+
+    free_block_t* init_block = (free_block_t*)start;
+    init_block->order = init_order;
+    init_block->used = 0;
+    init_block->next = NULL;
+
+    alloc->free[init_order].next = init_block;
+
+    return 0;
+}
+
+void* alloc_buddy_alloc(buddy_alloc_t* alloc, size_t size){
+    if (!alloc || !size || alloc->size < size){
+        return NULL;
+    }
+    size_t total_size = align(sizeof(free_block_t)+size);
+
+    int need_order = 0;
+    for (need_order = 0; (1 << need_order) < total_size; need_order++){}
+
+    int free_order;
+    for (free_order = MAX_ORDER; alloc->free[free_order].next != NULL && free_order >= 0 && free_order >= need_order; free_order--){}
+
+    while (free_order > need_order){
+        split(alloc, alloc->free[free_order].next);
+
+        free_order--;
+    }
+
+    free_block_t* ret_block = alloc->free[need_order].next;
+    ret_block->used = 1;
+
+    remove_block_from_free_list_by_order(alloc, ret_block, need_order);
+
+    alloc->free[need_order].next = alloc->free[need_order].next->next;
+
+    return (void*)((uintptr_t)ret_block + (uintptr_t)sizeof(free_block_t));
+}
+
+int free_buddy_alloc(buddy_alloc_t *alloc, void *ptr){
+    free_block_t* block = (free_block_t*)((uintptr_t)ptr - (uintptr_t)sizeof(free_block_t));
+
+    block->next = alloc->free[block->order].next;
+    alloc->free[block->order].next = block;
+
+    if (get_buddy(alloc, block, block->order)->used){
+        return 0;
+    }
+
+    
+
+    return 0;
 }

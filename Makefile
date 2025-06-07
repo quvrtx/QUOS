@@ -1,7 +1,8 @@
-ARCH ?= x86_32
+ARCH ?= x86
 
 CC = clang
-AS = nasm
+ASM = nasm
+RUST = rustc
 LD = ld
 OBJCOPY = objcopy
 MKDIR = mkdir -p
@@ -12,11 +13,12 @@ INCLUDE_DIR = include
 OBJ_DIR = obj
 BIN_DIR = bin
 
-ASFLAGS = -f elf32
-CC_FLAGS = -target i386-pc-none-elf -m32 -ffreestanding -nostdlib \
+ASMFLAGS = -f elf32
+CCFLAGS = -target i386-pc-none-elf -m32 -ffreestanding -nostdlib \
            -fno-builtin -fno-stack-protector -fno-pic \
            -I$(INCLUDE_DIR)/kernel/arch/$(ARCH) -I$(INCLUDE_DIR) -I$(INCLUDE_DIR)/kernel \
            -nostdinc -DARCH_$(ARCH)
+RUSTFLAGS = --emit=obj --target=i686-unknown-none
 LD_FLAGS = -m elf_i386 -nostdlib -T linker.ld --oformat=elf32-i386
 
 ASM_SOURCES := $(shell find $(SRC_DIR) -name '*.asm')
@@ -33,18 +35,24 @@ $(BIN_DIR)/kernel-$(ARCH).bin: $(BIN_DIR)/kernel-$(ARCH).elf
 $(BIN_DIR)/kernel-$(ARCH).elf: $(OBJECTS) | $(BIN_DIR)
 	$(LD) $(LD_FLAGS) -o $@ $(OBJECTS)
 
+# ASM compile
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.asm | $(DIRS)
 	@$(MKDIR) $(@D)
-	$(AS) $(ASFLAGS) $< -o $@
+	$(ASM) $(ASMFLAGS) $< -o $@
 
+# C compile
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(DIRS)
 	@$(MKDIR) $(@D)
-	$(CC) $(CC_FLAGS) -c $< -o $@
+	$(CC) $(CCFLAGS) -c $< -o $@
+
+#RUST compile
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.rs | $(DIRS)
+	@$(MKDIR) $(@D)
+	$(RUST) $(RUSTFLAGS) -C opt-level=2 -C debuginfo=2 $< -o $@
 
 $(DIRS) $(BIN_DIR):
 	@$(MKDIR) $@
 
-# ===== Очистка =====
 clean:
 	@$(RM) -r $(OBJ_DIR) $(BIN_DIR)
 

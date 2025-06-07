@@ -8,18 +8,20 @@
       "-ffreestanding",
       "-fno-builtin",
       "-fno-stack-protector",
-      "-Iinclude/kernel/x86_32",
+      "-fno-pic",
+      "-Iinclude/kernel/arch/x86",
       "-Iinclude",
       "-Iinclude/kernel",
       "-nostdinc",
+      "-DARCH_x86",
       "-c",
       "-o",
-      "obj/arch/x86_32/kernel/drivers/usb.o",
-      "src/arch/x86_32/kernel/drivers/usb.c"
+      "obj/arch/x86/kernel/drivers/keyboard.o",
+      "src/arch/x86/kernel/drivers/keyboard.c"
     ],
     "directory": "/home/user/Projects/QUOS",
-    "file": "/home/user/Projects/QUOS/src/arch/x86_32/kernel/drivers/usb.c",
-    "output": "/home/user/Projects/QUOS/obj/arch/x86_32/kernel/drivers/usb.o"
+    "file": "/home/user/Projects/QUOS/src/arch/x86/kernel/drivers/keyboard.c",
+    "output": "/home/user/Projects/QUOS/obj/arch/x86/kernel/drivers/keyboard.o"
   },
   {
     "arguments": [
@@ -30,18 +32,20 @@
       "-ffreestanding",
       "-fno-builtin",
       "-fno-stack-protector",
-      "-Iinclude/kernel/x86_32",
+      "-fno-pic",
+      "-Iinclude/kernel/arch/x86",
       "-Iinclude",
       "-Iinclude/kernel",
       "-nostdinc",
+      "-DARCH_x86",
       "-c",
       "-o",
-      "obj/arch/x86_32/kernel/drivers/io_port.o",
-      "src/arch/x86_32/kernel/drivers/io_port.c"
+      "obj/arch/x86/boot/idt.o",
+      "src/arch/x86/boot/idt.c"
     ],
     "directory": "/home/user/Projects/QUOS",
-    "file": "/home/user/Projects/QUOS/src/arch/x86_32/kernel/drivers/io_port.c",
-    "output": "/home/user/Projects/QUOS/obj/arch/x86_32/kernel/drivers/io_port.o"
+    "file": "/home/user/Projects/QUOS/src/arch/x86/boot/idt.c",
+    "output": "/home/user/Projects/QUOS/obj/arch/x86/boot/idt.o"
   },
   {
     "arguments": [
@@ -52,17 +56,19 @@
       "-ffreestanding",
       "-fno-builtin",
       "-fno-stack-protector",
-      "-Iinclude/kernel/x86_32",
+      "-fno-pic",
+      "-Iinclude/kernel/arch/x86",
       "-Iinclude",
       "-Iinclude/kernel",
       "-nostdinc",
+      "-DARCH_x86",
       "-c",
       "-o",
-      "obj/arch/x86_32/kernel/drivers/pci.o",
-      "src/arch/x86_32/kernel/drivers/pci.c"
+      "obj/kernel/main.o",
+      "src/kernel/main.c"
     ],
     "directory": "/home/user/Projects/QUOS",
-    "file": "/home/user/Projects/QUOS/src/arch/x86_32/kernel/drivers/pci.c",
-    "output": "/home/user/Projects/QUOS/obj/arch/x86_32/kernel/drivers/pci.o"
+    "file": "/home/user/Projects/QUOS/src/kernel/main.c",
+    "output": "/home/user/Projects/QUOS/obj/kernel/main.o"
   }
 ]

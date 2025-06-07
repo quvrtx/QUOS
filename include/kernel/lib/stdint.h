@@ -1,26 +1,26 @@
 #ifndef STDINT_H
 #define STDINT_H
 
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
+typedef signed char i8;
+typedef unsigned char u8;
 
-typedef short int16_t;
-typedef unsigned short uint16_t;
+typedef short i16;
+typedef unsigned short u16;
 
-typedef int int32_t;
-typedef unsigned int uint32_t;
+typedef int i32;
+typedef unsigned int u32;
 
 #if defined(__x86_64__) || defined(__aarch64__) || defined(__LP64__)
-typedef long int64_t;
-typedef unsigned long uint64_t;
+typedef long i64;
+typedef unsigned long u64;
 #else
-typedef long long int64_t;
-typedef unsigned long long uint64_t;
+typedef long long i64;
+typedef unsigned long long u64;
 #endif
 
 #if __SIZEOF_POINTER__ == 4
-typedef uint32_t uintptr_t;
-typedef int32_t intptr_t;
+typedef u32 uintptr_t;
+typedef i32 intptr_t;
 #elif __SIZEOF_POINTER__ == 8
 typedef uint64_t uintptr_t;
 typedef int64_t intptr_t;
@@ -32,8 +32,8 @@ typedef int64_t intptr_t;
 typedef uint64_t uintmax_t;
 typedef int64_t intmax_t;
 #else
-typedef uint32_t uintmax_t;
-typedef int32_t intmax_t;
+typedef u32 uintmax_t;
+typedef i32 intmax_t;
 #endif
 
 #define INT8_MIN   (-128)

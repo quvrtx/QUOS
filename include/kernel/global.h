@@ -4,6 +4,8 @@
 extern int time;
 
 extern int input_pos;
-extern char input[512];
+extern char* input;
+
+extern void init_globals();
 
 #endif //GLOBAL_H

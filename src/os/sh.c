@@ -1,6 +1,6 @@
 #include <os/sh.h>
-
-#include <drivers/io_port.h>
+#include <lib/stdarg.h>
+#include <kernel/drivers/io_port.h>
 
 typedef volatile char vchar;
 
@@ -17,6 +17,73 @@ struct {
     .x = 0,
     .y = 0
 };
+
+void vga_fputs(const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+
+    for (int i = 0; format[i] != '\0'; i++) {
+        if (format[i] == '%') {
+            i++;
+            switch (format[i]) {
+                case 'd': {
+                    int num = va_arg(args, int);
+                    char buffer[32];
+                    int j = 0;
+                    
+                    if (num < 0) {
+                        vga_putc('-');
+                        num = -num;
+                    }
+                    
+                    do {
+                        buffer[j++] = '0' + (num % 10);
+                        num /= 10;
+                    } while (num > 0);
+                    
+                    while (j > 0) {
+                        vga_putc(buffer[--j]);
+                    }
+                    break;
+                }
+                case 's': {
+                    char* str = va_arg(args, char*);
+                    vga_puts(str);
+                    break;
+                }
+                case 'c': {
+                    char c = (char)va_arg(args, int);
+                    vga_putc(c);
+                    break;
+                }
+                case 'x': {
+                    unsigned int num = va_arg(args, unsigned int);
+                    char hex_digits[] = "0123456789ABCDEF";
+                    
+                    vga_puts("0x");
+                    for (int shift = 28; shift >= 0; shift -= 4) {
+                        char c = hex_digits[(num >> shift) & 0xF];
+                        vga_putc(c);
+                    }
+                    break;
+                }
+                case '%': {
+                    vga_putc('%');
+                    break;
+                }
+                default: {
+                    vga_putc('%');
+                    vga_putc(format[i]);
+                    break;
+                }
+            }
+        } else {
+            vga_putc(format[i]);
+        }
+    }
+
+    va_end(args);
+}
 
 void vga_move_cursor(int x, int y) {
     uint16_t pos = y * WIDTH + x;
@@ -56,11 +123,10 @@ void vga_clear() {
 }
 
 void vga_delc(){
-    vga_move_cursor(cursor.x, cursor.y);
-
     vga[CURRENT_POS*2-2] = ' ';
     vga[CURRENT_POS*2-1] = 0x07;
     cursor.x--;
+    vga_move_cursor(cursor.x, cursor.y);
 }
 
 void vga_putc(char c) {
