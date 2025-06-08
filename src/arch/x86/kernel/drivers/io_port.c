@@ -1,32 +1,32 @@
 #include <lib/stdint.h>
 
-uint8_t inb(uint16_t port) {
-    uint8_t ret;
+u8 inb(u16 port) {
+    u8 ret;
     asm volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
     return ret;
 }
 
-void outb(uint16_t port, uint8_t value) {
+void outb(u16 port, u8 value) {
     asm volatile ("outb %0, %1" : : "a"(value), "Nd"(port));
 }
 
-uint16_t inw(uint16_t port) {
-    uint16_t ret;
+u16 inw(u16 port) {
+    u16 ret;
     asm volatile ("inw %1, %0" : "=a"(ret) : "Nd"(port));
     return ret;
 }
 
-void outw(uint16_t port, uint16_t value) {
+void outw(u16 port, u16 value) {
     asm volatile ("outw %0, %1" : : "a"(value), "Nd"(port));
 }
 
-uint32_t inl(uint16_t port) {
-    uint32_t ret;
+u32 inl(u16 port) {
+    u32 ret;
     asm volatile ("inl %1, %0" : "=a"(ret) : "Nd"(port));
     return ret;
 }
 
-void outl(uint16_t port, uint32_t value) {
+void outl(u16 port, u32 value) {
     asm volatile ("outl %0, %1" : : "a"(value), "Nd"(port));
 }
 

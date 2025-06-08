@@ -15,7 +15,7 @@ char keyboard_map[128] = {
 };
 
 void keyboard_handler_c() {
-    uint8_t scancode = inb(0x60);
+    u8 scancode = inb(0x60);
     
     if (scancode < 128) {
         char c = keyboard_map[scancode];

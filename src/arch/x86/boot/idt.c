@@ -8,27 +8,27 @@ extern void empty_handler();
 extern void keyboard_handler();
 
 typedef struct __attribute__((packed)) idt_entry{
-    uint16_t low_handler;
-    uint16_t selector;
-    uint8_t zero;
-    uint8_t flags;
-    uint16_t high_handler;
+    u16 low_handler;
+    u16 selector;
+    u8 zero;
+    u8 flags;
+    u16 high_handler;
 } IDT_ENTRY;
 
 typedef struct __attribute__((packed)) {
-    uint16_t limit;
-    uint32_t base;
+    u16 limit;
+    u32 base;
 } IDT_DESCRIPTOR;
 
 IDT_ENTRY idt[256];
 IDT_DESCRIPTOR idtptr;
 
-void idt_set_gate(int num, void (*handler)(), uint8_t flags, uint16_t selector){
-    idt[num].low_handler = (uint32_t)handler & 0xFFFF,
+void idt_set_gate(int num, void (*handler)(), u8 flags, u16 selector){
+    idt[num].low_handler = (u32)handler & 0xFFFF,
     idt[num].selector = selector,
     idt[num].zero = 0x00,
     idt[num].flags = flags,
-    idt[num].high_handler = ((uint32_t)handler >> 16) & 0xFFFF;
+    idt[num].high_handler = ((u32)handler >> 16) & 0xFFFF;
 }
 
 void init_idt(){
@@ -48,7 +48,7 @@ void init_idt(){
     }
 
     idtptr.limit = sizeof(idt) - 1;
-    idtptr.base = (uint32_t)&idt;
+    idtptr.base = (u32)&idt;
 
     asm volatile("lidt %0" : : "m" (idtptr));
 }

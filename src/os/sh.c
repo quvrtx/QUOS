@@ -86,7 +86,7 @@ void vga_fputs(const char* format, ...) {
 }
 
 void vga_move_cursor(int x, int y) {
-    uint16_t pos = y * WIDTH + x;
+    u16 pos = y * WIDTH + x;
     
     if (x >= WIDTH) x = WIDTH - 1;
     if (y >= HEIGHT) y = HEIGHT - 1;
@@ -97,11 +97,11 @@ void vga_move_cursor(int x, int y) {
     
     outb(0x3D4, 0x0F);
     io_wait();
-    outb(0x3D5, (uint8_t)(pos & 0xFF));
+    outb(0x3D5, (u8)(pos & 0xFF));
     
     outb(0x3D4, 0x0E);
     io_wait();
-    outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
+    outb(0x3D5, (u8)((pos >> 8) & 0xFF));
 }
 void vga_new_line() {
     cursor.x = 0;

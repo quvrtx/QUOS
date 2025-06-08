@@ -1,10 +1,10 @@
 #include <kernel/syscall/syscall.h>
 
-int write(int fd, void* buf, uint32_t count){
+int write(int fd, void* buf, u32 count){
     return 0;
 }
 
-int read(int fd, const void* buf, uint32_t count){
+int read(int fd, const void* buf, u32 count){
     return 0;
 }
 
