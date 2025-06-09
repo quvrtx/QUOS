@@ -16,7 +16,7 @@ BIN_DIR = bin
 ASMFLAGS = -f elf32
 CCFLAGS = -target i386-pc-none-elf -m32 -ffreestanding -nostdlib \
            -fno-builtin -fno-stack-protector -fno-pic \
-           -I$(INCLUDE_DIR)/kernel/arch/$(ARCH) -I$(INCLUDE_DIR) -I$(INCLUDE_DIR)/kernel \
+           -I$(INCLUDE_DIR)/arch/$(ARCH) -I$(INCLUDE_DIR) -I$(INCLUDE_DIR)/kernel \
            -nostdinc -DARCH_$(ARCH)
 RUSTFLAGS = --emit=obj --target=i686-unknown-none
 LD_FLAGS = -m elf_i386 -nostdlib -T linker.ld --oformat=elf32-i386
