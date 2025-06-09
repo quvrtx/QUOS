@@ -1,9 +1,26 @@
 #include <kernel/drivers/io_port.h>
 #include <os/sh.h>
 #include <os/cmd.h>
+#include <kernel/mm/mm.h>
+#include <lib/stdint.h>
 
-extern char input[512];
-extern int input_pos;
+char* input = (char*)0xFF11;
+int input_pos = 0;
+
+void clear_input(){
+    for (int i = 0; i < 512; i++){
+        input[i] = '\0';
+    }
+    input_pos = 0;
+}
+
+void init_keyboard(){
+    //input = (void*)kmalloc(512);
+
+    clear_input();
+
+    vga_fputs("%x\n-> ", (uintptr_t)input);
+}
 
 char keyboard_map[128] = {
     0, 27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
@@ -34,13 +51,14 @@ void keyboard_handler_c() {
                     
                     execute(input);
 
+                    clear_input();
                     vga_fputs("-> ");
                     break;
                 default:
                     input[input_pos] = c;
                     input_pos++;
                     input[input_pos] = '\0';
-                    vga_putc(c);
+                    vga_putc(c, 0x07);
             }
         }
     }

@@ -20,8 +20,8 @@ typedef struct buddy_alloc{
     free_block_t free[MAX_ORDER];    // linked list for each of sizes
 } buddy_alloc_t;
 
-int init_buddy_alloc(buddy_alloc_t* alloc, void* start, size_t size); // create inittial block and fill buddy_alloc_t structure
-void* alloc_buddy_alloc(buddy_alloc_t* alloc, size_t size);                 // allocate block with aligned size
-int free_buddy_alloc(buddy_alloc_t* alloc, void* ptr);                // free block by ptr
+int init_buddy_alloc(buddy_alloc_t* alloc, void* start, size_t size);    // create inittial block and fill buddy_alloc_t structure
+void* alloc_buddy_alloc(buddy_alloc_t* alloc, size_t size);              // allocate block with aligned size
+int free_buddy_alloc(buddy_alloc_t* alloc, void* ptr);                   // free block by ptr
 
 #endif //BUDDY_H

@@ -32,7 +32,7 @@ void vga_fputs(const char* format, ...) {
                     int j = 0;
                     
                     if (num < 0) {
-                        vga_putc('-');
+                        vga_putc('-', 0x07);
                         num = -num;
                     }
                     
@@ -42,7 +42,7 @@ void vga_fputs(const char* format, ...) {
                     } while (num > 0);
                     
                     while (j > 0) {
-                        vga_putc(buffer[--j]);
+                        vga_putc(buffer[--j], 0x07);
                     }
                     break;
                 }
@@ -53,7 +53,7 @@ void vga_fputs(const char* format, ...) {
                 }
                 case 'c': {
                     char c = (char)va_arg(args, int);
-                    vga_putc(c);
+                    vga_putc(c, 0x07);
                     break;
                 }
                 case 'x': {
@@ -63,22 +63,22 @@ void vga_fputs(const char* format, ...) {
                     vga_puts("0x");
                     for (int shift = 28; shift >= 0; shift -= 4) {
                         char c = hex_digits[(num >> shift) & 0xF];
-                        vga_putc(c);
+                        vga_putc(c, 0x07);
                     }
                     break;
                 }
                 case '%': {
-                    vga_putc('%');
+                    vga_putc('%', 0x07);
                     break;
                 }
                 default: {
-                    vga_putc('%');
-                    vga_putc(format[i]);
+                    vga_putc('%', 0x07);
+                    vga_putc(format[i], 0x07);
                     break;
                 }
             }
         } else {
-            vga_putc(format[i]);
+            vga_putc(format[i], 0x07);
         }
     }
 
@@ -129,7 +129,7 @@ void vga_delc(){
     vga_move_cursor(cursor.x, cursor.y);
 }
 
-void vga_putc(char c) {
+void vga_putc(char c, int attr) {
     switch (c) {
         case '\n':
             vga_new_line();
@@ -149,7 +149,7 @@ void vga_putc(char c) {
     }
 
     vga[CURRENT_POS * 2] = c;
-    vga[CURRENT_POS*2+1] = 0x07;
+    vga[CURRENT_POS*2+1] = attr;
 
     cursor.x++;
 
@@ -158,7 +158,13 @@ void vga_putc(char c) {
 
 void vga_puts(const char* str) {
     for (int i = 0; str[i] != '\0'; i++) {
-        vga_putc(str[i]);
+        vga_putc(str[i], 0x07);
+    }
+}
+
+void vga_colorful_puts(const char* str, int attr) {
+    for (int i = 0; str[i] != '\0'; i++) {
+        vga_putc(str[i], attr);
     }
 }
 

@@ -1,5 +1,4 @@
 #include <mm/buddy.h>
-#include <lib/stdint.h>
 
 
 /* align to order of 2 */
@@ -171,12 +170,11 @@ int free_buddy_alloc(buddy_alloc_t *alloc, void *ptr){
 
     block->next = alloc->free[block->order].next;
     alloc->free[block->order].next = block;
+    block->used = 0;
 
     if (get_buddy(alloc, block, block->order)->used){
         return 0;
     }
-
-    
 
     return 0;
 }

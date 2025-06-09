@@ -1,5 +1,6 @@
 #include <os/sh.h>
-#include <global.h>
+#include <kernel/mm/mm.h>
+#include <kernel/drivers/keyboard.h>
 
 void kernel(void){
     vga_clear();
@@ -8,9 +9,10 @@ void kernel(void){
     vga_puts("|  QU OS by QuVertex                                                           |\n");
     vga_puts("+------------------------------------------------------------------------------+\n");
 
-    vga_puts(" > ");
+    vga_puts("-> ");
 
-    init_globals();
+    init_allocator((void*)0xFF00, 5000);
+    init_keyboard();
 
     while (1){
         asm volatile("hlt");
